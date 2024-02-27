@@ -2,15 +2,18 @@ package Controller;
 
 import Model.Screenplay;
 import java.io.RandomAccessFile;
+import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
 public class MenuActions {
     RandomAccessFile raf;
+    Scanner scanner;
 
     public void startApp() throws Exception {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
+        scanner = new Scanner(System.in);
     }
 
     public void finishApp() {
@@ -27,12 +30,13 @@ public class MenuActions {
 
             String[] arrdata = lerArq("Database/NetFlix.csv"); // reads data from file
             Screenplay[] screenplays = new Screenplay[arrdata.length]; // array to store Screenplay objects
-            
+
             int id = 0;
-            for (int i = 0; i < arrdata.length; i++) {  
+            for (int i = 0; i < arrdata.length; i++) {
                 String[] data = arrdata[i].split(",");
-                screenplays[i] = new Screenplay(false, id, data[0], data[1], data[2], data[3], Integer.parseInt(data[4]),
-                        data[5].toCharArray() ); // creates a new Screenplay object
+                screenplays[i] = new Screenplay(false, id, data[0], data[1], data[2], data[3],
+                        Integer.parseInt(data[4]),
+                        data[5].toCharArray()); // creates a new Screenplay object
                 id++; // increments id
             }
 
@@ -46,10 +50,10 @@ public class MenuActions {
 
                 long pointer = raf.getFilePointer(); // stores current pointer
                 raf.seek(0); // sets pointer to the beginning of the file
-                raf.writeInt(screenplays[i].getId()); // writes last id to the file 
+                raf.writeInt(screenplays[i].getId()); // writes last id to the file
                 raf.seek(pointer); // sets pointer to the last position
             }
-            
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -64,17 +68,15 @@ public class MenuActions {
             int i = 0;
             while (i <= regs) {
                 int size = raf.readInt(); // read the size of the record
-                System.out.println(size);
                 boolean rip = raf.readBoolean(); // read if the record is removed
-                System.out.println(rip);
-                if(rip == false){ 
+                if (rip == false) {
                     byte[] ba = new byte[size]; // create a byte array with the size of the record
                     raf.read(ba);
                     Screenplay screenplay = new Screenplay();
                     screenplay.fromByteArray(ba); // convert byte array to Screenplay object
-                    raf.seek(raf.getFilePointer()-1);
+                    raf.seek(raf.getFilePointer() - 1);
                     System.out.println(screenplay);
-                }else{
+                } else {
                     raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
                 }
                 i++;
@@ -88,7 +90,47 @@ public class MenuActions {
     }
 
     public void findOne() {
-        System.out.println("Ler Registro...");
+        System.out.println("Lendo Registro...");
+
+        System.out.println("Digite o id do registro: ");
+        int seek = scanner.nextInt();
+
+        try {
+            raf.seek(0);
+            int regs = raf.readInt();
+            int i = 0;
+            Boolean found = false;
+
+            while (i <= regs) {
+                int size = raf.readInt(); // read the size of the record
+                boolean rip = raf.readBoolean(); // read if the record is removed
+
+                if (rip == false) {
+
+                    byte[] ba = new byte[size]; // create a byte array with the size of the record
+                    raf.read(ba);
+                    Screenplay screenplay = new Screenplay();
+                    screenplay.fromByteArray(ba); // convert byte array to Screenplay object
+                    raf.seek(raf.getFilePointer() - 1);
+                    if (screenplay.getId() == seek) {
+                        System.out.println(screenplay);
+                        i = regs + 1;
+                        found = true;
+                    }
+
+                } else {
+                    raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
+                }
+                i++;
+            }
+            if (found == false) {
+                System.out.println("\nRegistro não encontrado...");
+            }
+            System.out.println("Fim dos Registros...");
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     public void update() {
@@ -99,21 +141,19 @@ public class MenuActions {
         System.out.println("Deletar Registro...");
     }
 
-
-
-        public static String[] lerArq(String path) {
-            String[] arrData = new String[7747]; // array to store data
-            int i = 0;
-            try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-                String line;
-                br.readLine(); // skip the first line
-                while ((line = br.readLine()) != null) {
-                    arrData[i] = line;
-                    i++;
-                }
-            } catch (IOException e) {
-                System.out.println("Erro ao ler o arquivo: " + e.getMessage());
+    public static String[] lerArq(String path) {
+        String[] arrData = new String[7747]; // array to store data
+        int i = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String line;
+            br.readLine(); // skip the first line
+            while ((line = br.readLine()) != null) {
+                arrData[i] = line;
+                i++;
             }
-            return arrData;
+        } catch (IOException e) {
+            System.out.println("Erro ao ler o arquivo: " + e.getMessage());
         }
+        return arrData;
+    }
 }
