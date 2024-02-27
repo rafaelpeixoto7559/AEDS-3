@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class MenuActions {
-
     RandomAccessFile raf;
 
     public void startApp() throws Exception {
@@ -28,17 +27,27 @@ public class MenuActions {
 
             String[] arrdata = lerArq("Database/NetFlix.csv"); // reads data from file
             Screenplay[] screenplays = new Screenplay[arrdata.length]; // array to store Screenplay objects
-
-            for (int i = 0; i < arrdata.length; i++) {
+            
+            int id = 0;
+            for (int i = 0; i < arrdata.length; i++) {  
                 String[] data = arrdata[i].split(",");
-                screenplays[i] = new Screenplay(data[0], data[1], data[2], data[3], Integer.parseInt(data[4]),
+                screenplays[i] = new Screenplay(false, id, data[0], data[1], data[2], data[3], Integer.parseInt(data[4]),
                         data[5].toCharArray() ); // creates a new Screenplay object
+                id++; // increments id
             }
+
+            raf.seek(0); // sets pointer to the beginning of the file
+            raf.writeInt(screenplays.length); // writes the number of records to the file
 
             for (int i = 0; i < screenplays.length; i++) {
                 byte[] ba = screenplays[i].toByteArray();
                 raf.writeInt(ba.length);
                 raf.write(ba);
+
+                long pointer = raf.getFilePointer(); // stores current pointer
+                raf.seek(0); // sets pointer to the beginning of the file
+                raf.writeInt(screenplays[i].getId()); // writes last id to the file 
+                raf.seek(pointer); // sets pointer to the last position
             }
             
         } catch (Exception e) {
@@ -51,16 +60,30 @@ public class MenuActions {
 
         try {
             raf.seek(0);
-            while (true) {
-                int size = raf.readInt();
-                byte[] ba = new byte[size];
-                raf.read(ba);
-                Screenplay s = new Screenplay();
-                s.fromByteArray(ba);
-                System.out.println(s);
+            int regs = raf.readInt();
+            int i = 0;
+            while (i <= regs) {
+                int size = raf.readInt(); // read the size of the record
+                System.out.println(size);
+                boolean rip = raf.readBoolean(); // read if the record is removed
+                System.out.println(rip);
+                if(rip == false){ 
+                    byte[] ba = new byte[size]; // create a byte array with the size of the record
+                    raf.read(ba);
+                    Screenplay screenplay = new Screenplay();
+                    screenplay.fromByteArray(ba); // convert byte array to Screenplay object
+                    raf.seek(raf.getFilePointer()-1);
+                    System.out.println(screenplay);
+                }else{
+                    raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
+                }
+                i++;
             }
-        } catch (Exception e) {
+
             System.out.println("\n Fim dos Registros...");
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 

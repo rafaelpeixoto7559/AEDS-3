@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter;
 
 
 public class Screenplay {
+    Boolean rip;
+    int id;
     String type;
     String title;
     String director;
@@ -23,6 +25,8 @@ public class Screenplay {
     // Constructors
 
     public Screenplay() {
+        rip = false;
+        id = -1;
         type = "";
         title = "";
         director = "";
@@ -31,7 +35,9 @@ public class Screenplay {
         rating = new char[5];
     }
 
-    public Screenplay(String type, String title, String director, String dateadded, int releasedate, char[] rating) {
+    public Screenplay(Boolean rip, int id,String type, String title, String director, String dateadded, int releasedate, char[] rating) {
+        this.rip = rip;
+        this.id = id;
         this.type = type;
         this.title = title;
         this.director = director;
@@ -40,7 +46,9 @@ public class Screenplay {
         this.rating = rating;
     }
 
-    public Screenplay(String type, String title, String director, long dateadded, int releasedate, char[] rating) {
+    public Screenplay(Boolean rip, int id,String type, String title, String director, long dateadded, int releasedate, char[] rating) {
+        this.rip = rip;
+        this.id = id;
         this.type = type;
         this.title = title;
         this.director = director;
@@ -50,6 +58,13 @@ public class Screenplay {
     }
 
     // Getters
+    public Boolean getRip() {
+        return rip;
+    }
+
+    public int getId() {
+        return id;
+    }
 
     public String getType() {
         return type;
@@ -76,6 +91,14 @@ public class Screenplay {
     }
 
     // Setters
+
+    public void setRip(Boolean rip) {
+        this.rip = rip;
+    }
+    
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public void setType(String type) {
         this.type = type;
@@ -131,7 +154,8 @@ public class Screenplay {
     // toString
 
     public String toString() {
-        return  "\n type= " + type + 
+        return  "\n id= " + id +
+                "\n type= " + type + 
                 "\n title= " + title + 
                 "\n director= " + director + 
                 "\n dateadded= " + timestampConverter(dateadded) +
@@ -145,6 +169,8 @@ public class Screenplay {
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
+        dos.writeBoolean(rip);
+        dos.writeInt(id);
         dos.writeUTF(type);
         dos.writeUTF(title);
         dos.writeUTF(director);
@@ -161,6 +187,7 @@ public class Screenplay {
     public void fromByteArray(byte[] ba) throws IOException{
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
+        id = dis.readInt();
         type = dis.readUTF();
         title = dis.readUTF();
         director = dis.readUTF();
