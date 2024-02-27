@@ -1,7 +1,8 @@
+package Model;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.time.Instant;
@@ -107,10 +108,15 @@ public class Screenplay {
     // dateConvert
 
     private long dateConverter(String data) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
-        LocalDate localDate = LocalDate.parse(data, formatter); // converts string to localdate
-        Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant(); // converts localdate to instant
-        return instant.toEpochMilli(); // returns timestamp
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
+            LocalDate localDate = LocalDate.parse(data, formatter); // converts string to localdate
+            Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant(); // converts localdate to instant
+            return instant.toEpochMilli(); // returns timestamp
+        } catch (Exception e) {
+            return 0;
+        }
+        
     }
 
     //timestampConverter
