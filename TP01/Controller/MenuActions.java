@@ -2,6 +2,10 @@ package Controller;
 
 import Model.Screenplay;
 import java.io.RandomAccessFile;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -25,7 +29,7 @@ public class MenuActions {
     }
 
     public void loadData() {
-        System.out.println("Carregando Dados...");
+        System.out.println("\nCarregando Dados...");
         try {
 
             String[] arrdata = lerArq("Database/NetFlix.csv"); // reads data from file
@@ -60,7 +64,7 @@ public class MenuActions {
     }
 
     public void findAll() {
-        System.out.println("Mostrando Registros...");
+        System.out.println("\nMostrando Registros...");
 
         try {
             raf.seek(0);
@@ -89,10 +93,71 @@ public class MenuActions {
         }
     }
 
-    public void findOne() {
-        System.out.println("Lendo Registro...");
+    public void create() {
+        System.out.println("\nCriar Registro...");
+        
+        // begining of input intake
 
-        System.out.println("Digite o id do registro: ");
+        System.out.println("\nDigite o tipo da peça: ");
+        String type = scanner.nextLine();
+        
+        System.out.println("\nDigite o nome do filme: ");
+        String name = scanner.nextLine();
+        
+        System.out.println("\nDigite o nome do Diretor: ");
+        String director = scanner.nextLine();
+
+        System.out.println("\nDigite a data de adição (yyyy-mm-dd): ");
+        String dateadded = "";
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setLenient(false);
+
+        while (true) { // loop to validate date format
+            dateadded = scanner.nextLine();
+            try {
+                dateFormat.parse(dateadded);
+                break;
+            } catch (ParseException e) {
+                System.out.println("Formato de data inválido. Digite novamente (yyyy-mm-dd): ");
+            }
+        }
+        
+        System.out.println("\nDigite o ano de lançamento: ");
+        int releasedate = 0;
+
+        while (true) { // loop to validate year format
+            try {
+                releasedate = scanner.nextInt();
+                if (releasedate >= 1000 && releasedate <= 9999) {
+                    break;
+                } else {
+                    System.out.println("Ano inválido. Digite novamente: ");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Ano inválido. Digite novamente: ");
+                scanner.nextLine(); // clear the input buffer
+            }
+        }
+
+        System.out.println("\nDigite a classificação: ");
+        String input = scanner.nextLine();
+        char[] rating = new char[5];
+        Arrays.fill(rating, ' '); // fill the array with empty spaces
+        for (int i = 0; i < input.length() && i < 5; i++) {
+            rating[i] = input.charAt(i);
+        }
+
+        // begining of record creation
+
+        
+
+    }
+
+    public void findOne() {
+        System.out.println("\nLendo Registro...");
+
+        System.out.println("\nDigite o id do registro: ");
         int seek = scanner.nextInt();
 
         try {
@@ -134,13 +199,13 @@ public class MenuActions {
     }
 
     public void update() {
-        System.out.println("Atualizar Registro...");
+        System.out.println("\nAtualizar Registro...");
     }
 
     public void delete() {
-        System.out.println("Deletar Registro...");
+        System.out.println("\nDeletar Registro...");
 
-        System.out.println("Digite o id do registro: ");
+        System.out.println("\nDigite o id do registro: ");
         int seek = scanner.nextInt();
 
         try {

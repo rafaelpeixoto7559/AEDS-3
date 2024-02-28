@@ -11,23 +11,24 @@ public class Menu extends MenuActions {
   public int getSelectedOption() {
     return selectedOption;
   }
-
+  
   public Menu() {
     selectedOption = 0;
     scanner = new Scanner(System.in);
   }
-
+  
   public void setOption() {
     System.out.println("");
     System.out.println("Escolha uma opção: ");
     System.out.println("1: Carregar Dados");
     System.out.println("2: Mostrar Registros");
-    System.out.println("3: Ler Registro");
-    System.out.println("4: Atualizar Registro");
-    System.out.println("5: Deletar Registro");
-    System.out.println("6: Sair");
+    System.out.println("3: Criar Registro");
+    System.out.println("4: Ler Registro");
+    System.out.println("5: Atualizar Registro");
+    System.out.println("6: Deletar Registro");
+    System.out.println("7: Sair");
     int userEntry = Integer.parseInt(scanner.nextLine());
-    while (userEntry < 1 || userEntry > 6) {
+    while (userEntry < 1 || userEntry > 7) {
       System.out.println("Opção Inválida, tente novamente");
       userEntry = Integer.parseInt(scanner.nextLine());
     }
@@ -56,14 +57,18 @@ public class Menu extends MenuActions {
         this.execute();
         break;
       case 3:
-        this.findOne();
+        this.create();
         this.execute();
         break;
       case 4:
-        this.update();
+        this.findOne();
         this.execute();
         break;
       case 5:
+        this.update();
+        this.execute();
+        break;
+      case 6:
         this.delete();
         this.execute();
         break;
