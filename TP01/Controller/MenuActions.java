@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -31,6 +32,8 @@ public class MenuActions {
     public void loadData() {
         System.out.println("\nCarregando Dados...");
         try {
+
+            raf.setLength(0); // clears the file
 
             String[] arrdata = lerArq("Database/NetFlix.csv"); // reads data from file
             Screenplay[] screenplays = new Screenplay[arrdata.length]; // array to store Screenplay objects
@@ -65,12 +68,9 @@ public class MenuActions {
 
     public void findAll() {
         System.out.println("\nMostrando Registros...");
-
         try {
-            raf.seek(0);
-            int regs = raf.readInt();
-            int i = 0;
-            while (i <= regs) {
+            raf.seek(4); // sets pointer to the first record
+            while (true) {
                 int size = raf.readInt(); // read the size of the record
                 boolean rip = raf.readBoolean(); // read if the record is removed
                 if (rip == false) {
@@ -83,31 +83,31 @@ public class MenuActions {
                 } else {
                     raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
                 }
-                i++;
             }
 
-            System.out.println("\n Fim dos Registros...");
-
-        } catch (Exception e) {
+        }catch (EOFException e) {
+            System.out.println("\nFim dos Registros...");
+        }
+        catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
     public void create() {
         System.out.println("\nCriar Registro...");
-        
+
         // begining of input intake
 
-        System.out.println("\nDigite o tipo da peça: ");
+        System.out.println("\nDigite o tipo da Peça: ");
         String type = scanner.nextLine();
-        
-        System.out.println("\nDigite o nome do filme: ");
+
+        System.out.println("\nDigite o nome da Peça: ");
         String name = scanner.nextLine();
-        
+
         System.out.println("\nDigite o nome do Diretor: ");
         String director = scanner.nextLine();
 
-        System.out.println("\nDigite a data de adição (yyyy-mm-dd): ");
+        System.out.println("\nDigite a data de Adição (yyyy-mm-dd): ");
         String dateadded = "";
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -122,8 +122,8 @@ public class MenuActions {
                 System.out.println("Formato de data inválido. Digite novamente (yyyy-mm-dd): ");
             }
         }
-        
-        System.out.println("\nDigite o ano de lançamento: ");
+
+        System.out.println("\nDigite o ano de Lançamento: ");
         int releasedate = 0;
 
         while (true) { // loop to validate year format
@@ -140,7 +140,7 @@ public class MenuActions {
             }
         }
 
-        System.out.println("\nDigite a classificação: ");
+        System.out.println("\nDigite a Classificação: ");
         String input = scanner.nextLine();
         char[] rating = new char[5];
         Arrays.fill(rating, ' '); // fill the array with empty spaces
@@ -150,7 +150,21 @@ public class MenuActions {
 
         // begining of record creation
 
-        
+        try {
+            raf.seek(0);
+            int regs = raf.readInt();
+            regs++; // increments the number of records
+            raf.seek(raf.length()); // sets pointer to the end of the file
+            Screenplay screenplay = new Screenplay(false, regs, type, name, director, dateadded, releasedate, rating);
+            byte[] ba = screenplay.toByteArray();
+            raf.writeInt(ba.length);
+            raf.write(ba);
+            raf.seek(0); // sets pointer to the beginning of the file
+            raf.writeInt(regs); // updates the number of records
+            System.out.println("\nRegistro criado. ID: " + screenplay.getId());
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
 
     }
 
@@ -163,10 +177,9 @@ public class MenuActions {
         try {
             raf.seek(0);
             int regs = raf.readInt();
-            int i = 0;
             Boolean found = false;
 
-            while (i <= regs) {
+            while (true) {
                 int size = raf.readInt(); // read the size of the record
                 boolean rip = raf.readBoolean(); // read if the record is removed
 
@@ -179,20 +192,21 @@ public class MenuActions {
                     raf.seek(raf.getFilePointer() - 1);
                     if (screenplay.getId() == seek) {
                         System.out.println(screenplay);
-                        i = regs + 1;
                         found = true;
+                        break;
                     }
 
                 } else {
-                    raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it                    
+                    raf.seek(raf.getFilePointer() + size - 1); // if the record is removed, skip it
                 }
-                i++;
             }
             if (found == false) {
                 System.out.println("\nRegistro não encontrado...");
             }
             System.out.println("\nFim dos Registros...");
 
+        } catch (EOFException e) {
+            System.out.println("\nRegistro não encontrado...");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -200,6 +214,137 @@ public class MenuActions {
 
     public void update() {
         System.out.println("\nAtualizar Registro...");
+
+        System.out.println("\nDigite o id do registro: ");
+        int seek = scanner.nextInt();
+
+        // seeks the record to be updated and list it. Then, asks for the new data and
+        // updates the record
+
+        try {
+            raf.seek(0);
+            int regs = raf.readInt();
+            int i = 0;
+            Boolean found = false;
+            long pointer_rip = 0;
+
+            while (true) {
+                int size = raf.readInt(); // read the size of the record
+                boolean rip = raf.readBoolean(); // read if the record is removed
+                pointer_rip = raf.getFilePointer() - 1; // stores the pointer to the rip field
+
+                if (rip == false) {
+
+                    byte[] ba = new byte[size]; // create a byte array with the size of the record
+                    raf.read(ba);
+                    Screenplay screenplay = new Screenplay();
+                    screenplay.fromByteArray(ba); // convert byte array to Screenplay object
+                    raf.seek(raf.getFilePointer() - 1);
+                    if (screenplay.getId() == seek) {
+
+                        // list the record to be updated
+
+                        System.out.println("\n registro encontrado: " + screenplay);
+                        found = true;
+
+                        // begining of input intake
+
+                        scanner.nextLine(); // clear the input buffer
+                        System.out.println("\nDigite o tipo da Peça: ");
+                        String type = scanner.nextLine();
+
+                        System.out.println("\nDigite o nome da Peça: ");
+                        String name = scanner.nextLine();
+
+                        System.out.println("\nDigite o nome do Diretor: ");
+                        String director = scanner.nextLine();
+
+                        System.out.println("\nDigite a data de Adição (yyyy-mm-dd): ");
+                        String dateadded = "";
+
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        dateFormat.setLenient(false);
+
+                        while (true) { // loop to validate date format
+                            dateadded = scanner.nextLine();
+                            try {
+                                dateFormat.parse(dateadded);
+                                break;
+                            } catch (ParseException e) {
+                                System.out.println("Formato de data inválido. Digite novamente (yyyy-mm-dd): ");
+                            }
+                        }
+
+                        System.out.println("\nDigite o ano de Lançamento: ");
+                        int releasedate = 0;
+
+                        while (true) { // loop to validate year format
+                            try {
+                                releasedate = scanner.nextInt();
+                                if (releasedate >= 1000 && releasedate <= 9999) {
+                                    break;
+                                } else {
+                                    System.out.println("Ano inválido. Digite novamente: ");
+                                }
+                            } catch (InputMismatchException e) {
+                                System.out.println("Ano inválido. Digite novamente: ");
+                                scanner.nextLine(); // clear the input buffer
+                            }
+                        }
+
+                        System.out.println("\nDigite a Classificação: ");
+                        String input = scanner.nextLine();
+                        char[] rating = new char[5];
+                        Arrays.fill(rating, ' '); // fill the array with empty spaces
+                        for (int j = 0; j < input.length() && j < 5; j++) {
+                            rating[j] = input.charAt(j);
+                        }
+
+                        // begining of record update
+
+                        Screenplay screenplay2 = new Screenplay(false, seek, type, name, director, dateadded,
+                                releasedate, rating);
+                        byte[] ba2 = screenplay2.toByteArray();
+
+                        if (size != ba2.length) {
+
+                            raf.seek(pointer_rip);
+                            raf.writeBoolean(true); // set rip to true
+                            raf.seek(raf.length()); // sets pointer to the end of the file
+
+                            screenplay2.setId(seek); // sets the id of the new record
+                            raf.writeInt(ba2.length);
+                            raf.write(ba2);
+                            raf.seek(0); // sets pointer to the beginning of the file
+
+                            System.out.println("\nRegistro atualizado" + screenplay2);
+
+                            break;
+
+                        } else {
+                            raf.seek(raf.getFilePointer() - size);
+                            raf.write(ba2);
+                            System.out.println("\nRegistro atualizado" + screenplay2);
+                            break;
+                        }
+                    }
+
+                } else {
+                    raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
+                }
+            }
+
+            if (found == false) {
+                System.out.println("\nRegistro não encontrado...");
+            }
+            System.out.println("\nFim dos Registros...");
+
+        } catch (EOFException e) {
+            System.out.println("\nRegistro não encontrado...");
+        } catch (Exception e) {
+            System.out.println("\nError: " + e.getMessage());
+        }
+
     }
 
     public void delete() {
@@ -211,11 +356,10 @@ public class MenuActions {
         try {
             raf.seek(0);
             int regs = raf.readInt();
-            int i = 0;
             Boolean found = false;
             long pointer_rip = 0;
 
-            while (i <= regs) {
+            while (true) {
                 int size = raf.readInt(); // read the size of the record
                 boolean rip = raf.readBoolean(); // read if the record is removed
                 pointer_rip = raf.getFilePointer() - 1; // stores the pointer to the rip field
@@ -229,26 +373,27 @@ public class MenuActions {
                     raf.seek(raf.getFilePointer() - 1);
                     if (screenplay.getId() == seek) {
                         System.out.println(screenplay);
-                        i = regs + 1;
                         found = true;
                         raf.seek(pointer_rip);
                         raf.writeBoolean(true); // set rip to true
+                        break;
                     }
 
                 } else {
                     raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
                 }
-                i++;
             }
             if (found == false) {
                 System.out.println("\nRegistro não encontrado...");
-            }else{
+            } else {
                 System.out.println("\nRegistro deletado...");
             }
             System.out.println("\nFim dos Registros...");
 
+        } catch (EOFException e) {
+            System.out.println("\nRegistro não encontrado...");
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("\nError: " + e.getMessage());
         }
     }
 

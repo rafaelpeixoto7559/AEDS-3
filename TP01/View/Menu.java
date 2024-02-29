@@ -21,9 +21,9 @@ public class Menu extends MenuActions {
     System.out.println("");
     System.out.println("Escolha uma opção: ");
     System.out.println("1: Carregar Dados");
-    System.out.println("2: Mostrar Registros");
+    System.out.println("2: Listar Registros");
     System.out.println("3: Criar Registro");
-    System.out.println("4: Ler Registro");
+    System.out.println("4: Procurar Registro");
     System.out.println("5: Atualizar Registro");
     System.out.println("6: Deletar Registro");
     System.out.println("7: Sair");
