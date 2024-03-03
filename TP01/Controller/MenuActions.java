@@ -40,13 +40,18 @@ public class MenuActions {
 
             int id = 0;
             for (int i = 0; i < arrdata.length; i++) {
-                String[] data = arrdata[i].split(",");
-                screenplays[i] = new Screenplay(false, id, data[0], data[1], data[2], data[3],
-                        Integer.parseInt(data[4]),
-                        data[5].toCharArray()); // creates a new Screenplay object
+                String[] data = arrdata[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                if (data.length < 7) {
+                    String[] newData = new String[7];
+                    System.arraycopy(data, 0, newData, 0, data.length);
+                    Arrays.fill(newData, data.length, newData.length, "");
+                    data = newData;
+                }
+                screenplays[i] = new Screenplay(false, id, data[0], data[1],data[2], data[3], data[4],
+                        Integer.parseInt(data[5]),
+                        data[6].toCharArray()); // creates a new Screenplay object
                 id++; // increments id
             }
-
             raf.seek(0); // sets pointer to the beginning of the file
             raf.writeInt(screenplays.length); // writes the number of records to the file
 
@@ -107,6 +112,9 @@ public class MenuActions {
         System.out.println("\nDigite o nome do Diretor: ");
         String director = scanner.nextLine();
 
+        System.out.println("\nDigite os nomes do Elenco: ");
+        String cast = scanner.nextLine();
+
         System.out.println("\nDigite a data de Adição (yyyy-mm-dd): ");
         String dateadded = "";
 
@@ -156,7 +164,7 @@ public class MenuActions {
             int regs = raf.readInt();
             regs++; // increments the number of records
             raf.seek(raf.length()); // sets pointer to the end of the file
-            Screenplay screenplay = new Screenplay(false, regs, type, name, director, dateadded, releasedate, rating);
+            Screenplay screenplay = new Screenplay(false, regs, type, name, director, cast, dateadded, releasedate, rating);
             byte[] ba = screenplay.toByteArray();
             raf.writeInt(ba.length);
             raf.write(ba);
@@ -312,6 +320,9 @@ public class MenuActions {
                         System.out.println("\nDigite o nome do Diretor: ");
                         String director = scanner.nextLine();
 
+                        System.out.println("\nDigite os nomes do Elenco: ");
+                        String cast = scanner.nextLine();
+
                         System.out.println("\nDigite a data de Adição (yyyy-mm-dd): ");
                         String dateadded = "";
 
@@ -356,7 +367,7 @@ public class MenuActions {
 
                         // begining of record update
 
-                        Screenplay screenplay2 = new Screenplay(false, seek, type, name, director, dateadded,
+                        Screenplay screenplay2 = new Screenplay(false, seek, type, name, director, cast, dateadded,
                                 releasedate, rating);
                         byte[] ba2 = screenplay2.toByteArray();
 

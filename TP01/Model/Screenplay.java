@@ -18,6 +18,7 @@ public class Screenplay {
     String type;
     String title;
     String director;
+    String cast;
     long dateadded;
     int releasedate;
     char[] rating = new char[5];
@@ -30,28 +31,31 @@ public class Screenplay {
         type = "";
         title = "";
         director = "";
+        cast = "";
         dateadded = 0;
         releasedate = 0;
         rating = new char[5];
     }
 
-    public Screenplay(Boolean rip, int id,String type, String title, String director, String dateadded, int releasedate, char[] rating) {
+    public Screenplay(Boolean rip, int id,String type, String title, String director, String cast, String dateadded, int releasedate, char[] rating) {
         this.rip = rip;
         this.id = id;
         this.type = type;
         this.title = title;
         this.director = director;
+        this.cast = cast;
         this.dateadded = dateConverter(dateadded);
         this.releasedate = releasedate;
         this.rating = rating;
     }
 
-    public Screenplay(Boolean rip, int id,String type, String title, String director, long dateadded, int releasedate, char[] rating) {
+    public Screenplay(Boolean rip, int id,String type, String title, String director, String cast, long dateadded, int releasedate, char[] rating) {
         this.rip = rip;
         this.id = id;
         this.type = type;
         this.title = title;
         this.director = director;
+        this.cast = cast;
         this.dateadded = dateadded;
         this.releasedate = releasedate;
         this.rating = rating;
@@ -76,6 +80,10 @@ public class Screenplay {
 
     public String getDirector() {
         return director;
+    }
+
+    public String getCast() {
+        return cast;
     }
 
     public String getDateadded() {
@@ -110,6 +118,10 @@ public class Screenplay {
 
     public void setDirector(String director) {
         this.director = director;
+    }
+
+    public void setCast(String cast) {
+        this.cast = cast;
     }
 
     public void setDateadded(String dateadded) {
@@ -158,6 +170,7 @@ public class Screenplay {
                 "\n type= " + type + 
                 "\n title= " + title + 
                 "\n director= " + director + 
+                "\n cast= " + cast +
                 "\n dateadded= " + timestampConverter(dateadded) +
                 "\n releasedate= " + releasedate +
                 "\n rating= " + new String(rating);
@@ -174,6 +187,7 @@ public class Screenplay {
         dos.writeUTF(type);
         dos.writeUTF(title);
         dos.writeUTF(director);
+        dos.writeUTF(cast);
         dos.writeLong(dateadded);
         dos.writeInt(releasedate);
         dos.writeBytes(new String(rating));
@@ -191,6 +205,7 @@ public class Screenplay {
         type = dis.readUTF();
         title = dis.readUTF();
         director = dis.readUTF();
+        cast = dis.readUTF();
         dateadded = dis.readLong();
         releasedate = dis.readInt();
         byte[] rating = new byte[5];
