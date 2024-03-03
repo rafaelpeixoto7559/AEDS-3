@@ -81,7 +81,7 @@ public class MenuActions {
                     raf.seek(raf.getFilePointer() - 1);
                     System.out.println(screenplay);
                 } else {
-                    raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
+                    raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
                 }
             }
 
@@ -140,6 +140,7 @@ public class MenuActions {
             }
         }
 
+        scanner.nextLine(); // clear the input buffer
         System.out.println("\nDigite a Classificação: ");
         String input = scanner.nextLine();
         char[] rating = new char[5];
@@ -171,8 +172,34 @@ public class MenuActions {
     public void findOne() {
         System.out.println("\nLendo Registro...");
 
-        System.out.println("\nDigite o id do registro: ");
-        int seek = scanner.nextInt();
+        int seek = 0;
+        boolean validInput = false;
+
+        while (!validInput) {
+            System.out.println("\nDigite o id do registro: ");
+            if (scanner.hasNextInt()) {
+                seek = scanner.nextInt();
+                if (seek >= 0) {
+                    validInput = true;
+                } else {
+                    System.out.println("Entrada inválida. Digite novamente.");
+                }
+            } else {
+                System.out.println("Entrada inválida. Digite novamente.");
+                scanner.nextLine(); // clear the input buffer
+            }
+        }
+
+        while (!validInput) {
+            System.out.println("\nDigite o id do registro: ");
+            if (scanner.hasNextInt()) {
+                seek = scanner.nextInt();
+                validInput = true;
+            } else {
+                System.out.println("Entrada inválida. Digite novamente.");
+                scanner.nextLine(); // clear the input buffer
+            }
+        }
 
         try {
             raf.seek(0);
@@ -215,8 +242,34 @@ public class MenuActions {
     public void update() {
         System.out.println("\nAtualizar Registro...");
 
-        System.out.println("\nDigite o id do registro: ");
-        int seek = scanner.nextInt();
+        int seek = 0;
+        boolean validInput = false;
+
+        while (!validInput) {
+            System.out.println("\nDigite o id do registro: ");
+            if (scanner.hasNextInt()) {
+                seek = scanner.nextInt();
+                if (seek >= 0) {
+                    validInput = true;
+                } else {
+                    System.out.println("Entrada inválida. Digite novamente.");
+                }
+            } else {
+                System.out.println("Entrada inválida. Digite novamente.");
+                scanner.nextLine(); // clear the input buffer
+            }
+        }
+
+        while (!validInput) {
+            System.out.println("\nDigite o id do registro: ");
+            if (scanner.hasNextInt()) {
+                seek = scanner.nextInt();
+                validInput = true;
+            } else {
+                System.out.println("Entrada inválida. Digite novamente.");
+                scanner.nextLine(); // clear the input buffer
+            }
+        }
 
         // seeks the record to be updated and list it. Then, asks for the new data and
         // updates the record
@@ -240,7 +293,7 @@ public class MenuActions {
                     Screenplay screenplay = new Screenplay();
                     screenplay.fromByteArray(ba); // convert byte array to Screenplay object
                     raf.seek(raf.getFilePointer() - 1);
-                    if (screenplay.getId() == seek) {
+                    if (screenplay.getId() == seek && rip == false) {
 
                         // list the record to be updated
 
@@ -292,6 +345,7 @@ public class MenuActions {
                             }
                         }
 
+                        scanner.nextLine(); // clear the input buffer
                         System.out.println("\nDigite a Classificação: ");
                         String input = scanner.nextLine();
                         char[] rating = new char[5];
@@ -322,7 +376,7 @@ public class MenuActions {
                             break;
 
                         } else {
-                            raf.seek(raf.getFilePointer() - size);
+                            raf.seek(raf.getFilePointer() - size + 1);
                             raf.write(ba2);
                             System.out.println("\nRegistro atualizado" + screenplay2);
                             break;
@@ -330,7 +384,7 @@ public class MenuActions {
                     }
 
                 } else {
-                    raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
+                    raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
                 }
             }
 
@@ -350,8 +404,34 @@ public class MenuActions {
     public void delete() {
         System.out.println("\nDeletar Registro...");
 
-        System.out.println("\nDigite o id do registro: ");
-        int seek = scanner.nextInt();
+        int seek = 0;
+        boolean validInput = false;
+
+        while (!validInput) {
+            System.out.println("\nDigite o id do registro: ");
+            if (scanner.hasNextInt()) {
+                seek = scanner.nextInt();
+                if (seek >= 0) {
+                    validInput = true;
+                } else {
+                    System.out.println("Entrada inválida. Digite novamente.");
+                }
+            } else {
+                System.out.println("Entrada inválida. Digite novamente.");
+                scanner.nextLine(); // clear the input buffer
+            }
+        }
+
+        while (!validInput) {
+            System.out.println("\nDigite o id do registro: ");
+            if (scanner.hasNextInt()) {
+                seek = scanner.nextInt();
+                validInput = true;
+            } else {
+                System.out.println("Entrada inválida. Digite novamente.");
+                scanner.nextLine(); // clear the input buffer
+            }
+        }
 
         try {
             raf.seek(0);
@@ -380,7 +460,7 @@ public class MenuActions {
                     }
 
                 } else {
-                    raf.seek(raf.getFilePointer() + size); // if the record is removed, skip it
+                    raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
                 }
             }
             if (found == false) {
