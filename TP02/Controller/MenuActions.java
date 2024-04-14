@@ -1,5 +1,7 @@
 package Controller;
 
+import Model.Diretorio;
+import Model.Indexes;
 import Model.Screenplay;
 import java.io.RandomAccessFile;
 import java.text.ParseException;
@@ -9,16 +11,19 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.EOFException;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
 public class MenuActions {
     RandomAccessFile raf;
     Scanner scanner;
+    Indexes indexes;
 
     public void startApp() throws Exception {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
         scanner = new Scanner(System.in);
+        indexes = new Indexes();
     }
 
     public void finishApp() {
@@ -29,10 +34,9 @@ public class MenuActions {
         }
     }
 
-    public void loadData() {
+    public void loadData() throws FileNotFoundException {
         System.out.println("\nCarregando Dados...");
         try {
-
             raf.setLength(0); // clears the file
 
             String[] arrdata = lerArq("Database/NetFlix.csv"); // reads data from file
@@ -47,16 +51,18 @@ public class MenuActions {
                     Arrays.fill(newData, data.length, newData.length, "");
                     data = newData;
                 }
-                screenplays[i] = new Screenplay(false, id, data[0], data[1],data[2], data[3], data[4],
+                screenplays[i] = new Screenplay(false, id, data[0], data[1], data[2], data[3], data[4],
                         Integer.parseInt(data[5]),
                         data[6].toCharArray()); // creates a new Screenplay object
                 id++; // increments id
+
             }
             raf.seek(0); // sets pointer to the beginning of the file
             raf.writeInt(screenplays.length); // writes the number of records to the file
 
             for (int i = 0; i < screenplays.length; i++) {
                 byte[] ba = screenplays[i].toByteArray();
+                long RecordStart = raf.getFilePointer(); // stores the position of the record
                 raf.writeInt(ba.length);
                 raf.write(ba);
 
@@ -64,7 +70,10 @@ public class MenuActions {
                 raf.seek(0); // sets pointer to the beginning of the file
                 raf.writeInt(screenplays[i].getId()); // writes last id to the file
                 raf.seek(pointer); // sets pointer to the last position
+
+                Indexes.Indexify(screenplays[i].getId(), RecordStart);
             }
+            Indexes.getFromIndex(screenplays[187].getId());
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -86,14 +95,13 @@ public class MenuActions {
                     raf.seek(raf.getFilePointer() - 1);
                     System.out.println(screenplay);
                 } else {
-                    raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
+                    raf.seek(raf.getFilePointer() + size - 1); // if the record is removed, skip it
                 }
             }
 
-        }catch (EOFException e) {
+        } catch (EOFException e) {
             System.out.println("\nFim dos Registros...");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
@@ -164,7 +172,8 @@ public class MenuActions {
             int regs = raf.readInt();
             regs++; // increments the number of records
             raf.seek(raf.length()); // sets pointer to the end of the file
-            Screenplay screenplay = new Screenplay(false, regs, type, name, director, cast, dateadded, releasedate, rating);
+            Screenplay screenplay = new Screenplay(false, regs, type, name, director, cast, dateadded, releasedate,
+                    rating);
             byte[] ba = screenplay.toByteArray();
             raf.writeInt(ba.length);
             raf.write(ba);
@@ -392,7 +401,7 @@ public class MenuActions {
                     }
 
                 } else {
-                    raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
+                    raf.seek(raf.getFilePointer() + size - 1); // if the record is removed, skip it
                 }
             }
 
@@ -467,7 +476,7 @@ public class MenuActions {
                     }
 
                 } else {
-                    raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
+                    raf.seek(raf.getFilePointer() + size - 1); // if the record is removed, skip it
                 }
             }
             if (found == false) {
@@ -498,5 +507,22 @@ public class MenuActions {
             System.out.println("Erro ao ler o arquivo: " + e.getMessage());
         }
         return arrData;
+    }
+
+    public void Hash() {
+        Diretorio dir = new Diretorio();
+
+        try {
+
+            for (int i = 0; i < 7700; i++) {
+                // System.out.println("Inserindo registro de ID:" + i);
+                dir.add(i);
+            }
+            // System.out.println("Digite um id:");
+            // int id = scanner.nextInt();
+            // dir.add(id);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }
