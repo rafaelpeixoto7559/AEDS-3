@@ -1,5 +1,12 @@
 package Model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
+
 public class BTree {
 
     public Node root; // Pointer to root node
@@ -12,7 +19,6 @@ public class BTree {
 
     // Function to traverse the tree
     public void traverse() {
-
         if (this.root != null) {
             this.root.traverse();
         } else {
@@ -32,7 +38,7 @@ public class BTree {
     }
 
     // Function to insert a new key in the tree
-    public void insert(int key, int address) {
+    public void insert(int key, long address) {
         if (root == null) {
             root = new Node(degree, true);
             root.keys[0] = key;
@@ -147,7 +153,7 @@ public class BTree {
             }
             Node nb = null;
             int separator = 0;
-            int separatoraddress = 0;
+            long separatoraddress = 0;
 
             if(pos != node.keycount && node.child[pos+1].keycount >= degree){
                 separator = node.keys[pos];
@@ -270,5 +276,31 @@ public class BTree {
             return search(node.child[i], value);
         }
 
+    }
+
+    // Function to store the tree in a file
+    
+    public void store(RandomAccessFile braf) throws IOException {
+        braf.setLength(0);
+        String filename = "./Database/BTree.db";
+        braf.seek(0);
+        braf.writeLong(228);
+        braf.writeLong(0);
+
+        if (this.root != null) {
+            this.root.store(braf);
+        } else {
+            System.out.println("Arvore vazia!");
+        }
+        System.out.println();
+
+    }
+
+    // Function to load the tree from a file
+    public void load(RandomAccessFile braf) throws IOException {
+        braf.seek(0);
+        long rootAddress = braf.readLong();
+        this.root = new Node(degree, false);
+        this.root.load(braf, rootAddress);
     }
 }
