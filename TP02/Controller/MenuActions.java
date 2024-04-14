@@ -1,5 +1,7 @@
 package Controller;
 
+import Model.BTree;
+import Model.Node;
 import Model.Screenplay;
 import java.io.RandomAccessFile;
 import java.text.ParseException;
@@ -14,11 +16,15 @@ import java.io.IOException;
 
 public class MenuActions {
     RandomAccessFile raf;
+    RandomAccessFile braf;
     Scanner scanner;
+    BTree btree;
 
     public void startApp() throws Exception {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
+        braf = new RandomAccessFile("./Database/BTree.db", "rw");
         scanner = new Scanner(System.in);
+        btree = new BTree(4);
     }
 
     public void finishApp() {
@@ -29,7 +35,7 @@ public class MenuActions {
         }
     }
 
-    public void loadData() {
+    public void loadData() throws IOException {
         System.out.println("\nCarregando Dados...");
         try {
 
@@ -66,9 +72,37 @@ public class MenuActions {
                 raf.seek(pointer); // sets pointer to the last position
             }
 
+            // adds records to btree
+            try {
+                raf.seek(4); // sets pointer to the first record
+                while (true) {
+                    long pointer = raf.getFilePointer(); // stores current pointer
+                    int size = raf.readInt(); // read the size of the record
+                    boolean rip = raf.readBoolean(); // read if the record is removed
+                    if (rip == false) {
+                        byte[] ba = new byte[size]; // create a byte array with the size of the record
+                        raf.read(ba);
+                        Screenplay screenplay = new Screenplay();
+                        screenplay.fromByteArray(ba); // convert byte array to Screenplay object
+                        raf.seek(raf.getFilePointer() - 1);
+                        btree.insert(screenplay.getId(), pointer); // adds record to btree
+                    } else {
+                        raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
+                    }
+                }
+                
+            }catch (EOFException e) {
+                System.out.println("\nFim dos Registros...");
+            }
+            catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+        btree.store(braf);
+        System.out.println("Arvore salva");
     }
 
     public void findAll() {
@@ -211,6 +245,7 @@ public class MenuActions {
 
         try {
             raf.seek(0);
+            int regs = raf.readInt();
             Boolean found = false;
 
             while (true) {
@@ -283,6 +318,8 @@ public class MenuActions {
 
         try {
             raf.seek(0);
+            int regs = raf.readInt();
+            int i = 0;
             Boolean found = false;
             long pointer_rip = 0;
 
@@ -443,6 +480,7 @@ public class MenuActions {
 
         try {
             raf.seek(0);
+            int regs = raf.readInt();
             Boolean found = false;
             long pointer_rip = 0;
 

@@ -46,7 +46,7 @@ public class Menu extends MenuActions {
     }
   }
 
-  public void executeSelectedOption() {
+  public void executeSelectedOption() throws Exception{
     switch (this.selectedOption) {
       case 1:
         this.loadData();
