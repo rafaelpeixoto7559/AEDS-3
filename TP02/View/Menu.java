@@ -49,7 +49,8 @@ public class Menu extends MenuActions {
     }
   }
 
-  public void executeSelectedOption() throws FileNotFoundException {
+
+  public void executeSelectedOption() throws Exception{
     switch (this.selectedOption) {
       case 1:
         this.loadData();
