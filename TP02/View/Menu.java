@@ -1,6 +1,8 @@
 package View;
 
 import Controller.MenuActions;
+
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Menu extends MenuActions {
@@ -11,12 +13,12 @@ public class Menu extends MenuActions {
   public int getSelectedOption() {
     return selectedOption;
   }
-  
+
   public Menu() {
     selectedOption = 0;
     scanner = new Scanner(System.in);
   }
-  
+
   public void setOption() {
     System.out.println("");
     System.out.println("Escolha uma opção: ");
@@ -26,7 +28,8 @@ public class Menu extends MenuActions {
     System.out.println("4: Procurar Registro");
     System.out.println("5: Atualizar Registro");
     System.out.println("6: Deletar Registro");
-    System.out.println("7: Sair");
+    System.out.println("7: Hashing Extensível");
+    System.out.println("8: Sair");
     int userEntry = Integer.parseInt(scanner.nextLine());
     while (userEntry < 1 || userEntry > 7) {
       System.out.println("Opção Inválida, tente novamente");
@@ -45,6 +48,7 @@ public class Menu extends MenuActions {
       System.out.println(e.getMessage());
     }
   }
+
 
   public void executeSelectedOption() throws Exception{
     switch (this.selectedOption) {
@@ -70,6 +74,11 @@ public class Menu extends MenuActions {
         break;
       case 6:
         this.delete();
+        this.execute();
+        break;
+      case 7:
+
+        this.Hash();
         this.execute();
         break;
       default:
