@@ -1,6 +1,5 @@
 package Controller;
 
-
 import Model.Diretorio;
 import Model.Indexes;
 import Model.BTree;
@@ -27,7 +26,6 @@ public class MenuActions {
 
     BTree btree;
 
-
     public void startApp() throws Exception {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
         braf = new RandomAccessFile("./Database/BTree.db", "rw");
@@ -44,7 +42,7 @@ public class MenuActions {
             System.out.println(e.getMessage());
         }
     }
-  
+
     public void loadData() throws Exception {
         System.out.println("\nCarregando Dados...");
         try {
@@ -84,7 +82,6 @@ public class MenuActions {
 
                 Indexes.Indexify(screenplays[i].getId(), RecordStart);
             }
-            Indexes.getFromIndex(screenplays[187].getId());
 
             // adds records to btree
             try {
@@ -101,14 +98,13 @@ public class MenuActions {
                         raf.seek(raf.getFilePointer() - 1);
                         btree.insert(screenplay.getId(), pointer); // adds record to btree
                     } else {
-                        raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
+                        raf.seek(raf.getFilePointer() + size - 1); // if the record is removed, skip it
                     }
                 }
-                
-            }catch (EOFException e) {
+
+            } catch (EOFException e) {
                 System.out.println("\nFim dos Registros...");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
 
@@ -116,10 +112,11 @@ public class MenuActions {
             System.out.println("Error: " + e.getMessage());
         }
         btree.store(braf);
+        btree.traverse();
         System.out.println("Arvore salva");
     }
 
-    public void findAll() {
+    public void findAll() throws IOException {
         System.out.println("\nMostrando Registros...");
         try {
             raf.seek(4); // sets pointer to the first record
@@ -143,9 +140,13 @@ public class MenuActions {
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+        System.out.println("Carregando arvore...");
+        btree.load(braf);
+        System.out.println("\n Arvore: ");
+        btree.traverse();
     }
 
-    public void create() {
+    public void create() throws IOException {
         System.out.println("\nCriar Registro...");
 
         // begining of input intake
@@ -211,6 +212,7 @@ public class MenuActions {
             int regs = raf.readInt();
             regs++; // increments the number of records
             raf.seek(raf.length()); // sets pointer to the end of the file
+            long pointer = raf.getFilePointer(); // stores current pointer
             Screenplay screenplay = new Screenplay(false, regs, type, name, director, cast, dateadded, releasedate,
                     rating);
             byte[] ba = screenplay.toByteArray();
@@ -219,13 +221,17 @@ public class MenuActions {
             raf.seek(0); // sets pointer to the beginning of the file
             raf.writeInt(regs); // updates the number of records
             System.out.println("\nRegistro criado. ID: " + screenplay.getId());
+            System.out.println("Adicionando ao arquivo de indices...");
+            btree.load(braf);
+            btree.insert(screenplay.getId(), pointer);
+            btree.store(braf);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
 
     }
 
-    public void findOne() {
+    public void findOne() throws IOException {
         System.out.println("\nLendo Registro...");
 
         int seek = 0;
@@ -255,6 +261,21 @@ public class MenuActions {
                 System.out.println("Entrada inválida. Digite novamente.");
                 scanner.nextLine(); // clear the input buffer
             }
+        }
+
+        System.out.println("Carregando arvore...");
+        btree.load(braf);
+        System.out.println("\n Arvore: \n");
+        Node node = btree.search(seek);
+        if (node != null) {
+            for (int i = 0; i < node.keycount; i++) {
+                if (node.keys[i] == seek) {
+                    System.out.println("Registro encontrado na arvore\n");
+                    System.out.println("Posição: " + node.addresses[i] + "\n");
+                }
+            }
+        } else {
+            System.out.println("Registro não encontrado na arvore");
         }
 
         try {
@@ -295,7 +316,7 @@ public class MenuActions {
         }
     }
 
-    public void update() {
+    public void update() throws IOException {
         System.out.println("\nAtualizar Registro...");
 
         int seek = 0;
@@ -330,6 +351,7 @@ public class MenuActions {
         // seeks the record to be updated and list it. Then, asks for the new data and
         // updates the record
 
+        long pointer = 0;
         try {
             raf.seek(0);
             int regs = raf.readInt();
@@ -338,6 +360,7 @@ public class MenuActions {
             long pointer_rip = 0;
 
             while (true) {
+                pointer = raf.getFilePointer(); // stores the position of the record
                 int size = raf.readInt(); // read the size of the record
                 boolean rip = raf.readBoolean(); // read if the record is removed
                 pointer_rip = raf.getFilePointer() - 1; // stores the pointer to the rip field
@@ -424,6 +447,7 @@ public class MenuActions {
                             raf.seek(pointer_rip);
                             raf.writeBoolean(true); // set rip to true
                             raf.seek(raf.length()); // sets pointer to the end of the file
+                            pointer = raf.getFilePointer(); // stores current pointer
 
                             screenplay2.setId(seek); // sets the id of the new record
                             raf.writeInt(ba2.length);
@@ -457,10 +481,16 @@ public class MenuActions {
         } catch (Exception e) {
             System.out.println("\nError: " + e.getMessage());
         }
+        System.out.println("Carregando arvore...");
+        btree.load(braf);
+        System.out.println("Atualizando arvore...");
+        btree.delete(seek);
+        System.out.println("Arvore deletada");
+        btree.insert(seek, pointer);
 
     }
 
-    public void delete() {
+    public void delete() throws IOException {
         System.out.println("\nDeletar Registro...");
 
         int seek = 0;
@@ -491,6 +521,10 @@ public class MenuActions {
                 scanner.nextLine(); // clear the input buffer
             }
         }
+
+        btree.load(braf);
+        btree.traverse();
+        btree.delete(seek);
 
         try {
             raf.seek(0);

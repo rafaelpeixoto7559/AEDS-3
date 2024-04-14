@@ -6,11 +6,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class Node {
-    int[] keys; // An array of keys
-    long[] addresses; // An array of addresses
+    public int[] keys; // An array of keys
+    public long[] addresses; // An array of addresses
     int degree; // minimum degree (defines the range for number of keys)
     Node[] child; // An array of child pointers
-    int keycount; // Current number of keys
+    public int keycount; // Current number of keys
     boolean isLeaf; // Is true when node is isLeaf. Otherwise false
 
     // Constructor

@@ -223,7 +223,7 @@ public class BTree {
                 lt.addresses[lt.keycount] = separatoraddress;
                 lt.keycount++;
 
-                for (int i = 0, j = lt.keycount; i < rt.keycount; i++, j++) {
+                for (int i = 0, j = lt.keycount; i < rt.keycount + 1; i++, j++) {
                     if(i != rt.keycount){
                         lt.keys[j] = rt.keys[i];
                         lt.addresses[j] = rt.addresses[i];
@@ -255,7 +255,7 @@ public class BTree {
         int i = 0;
 
         if (node == null) {
-            return null;
+            return node;
         }
 
         for (i = 0; i < node.keycount; i++) {
