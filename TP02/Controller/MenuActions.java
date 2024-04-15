@@ -141,9 +141,13 @@ public class MenuActions {
             System.out.println("Error: " + e.getMessage());
         }
         System.out.println("Carregando arvore...");
+
+
         btree.load(braf);
         System.out.println("\n Arvore: ");
         btree.traverse();
+
+
     }
 
     public void create() throws IOException {
@@ -222,9 +226,13 @@ public class MenuActions {
             raf.writeInt(regs); // updates the number of records
             System.out.println("\nRegistro criado. ID: " + screenplay.getId());
             System.out.println("Adicionando ao arquivo de indices...");
+
+
             btree.load(braf);
             btree.insert(screenplay.getId(), pointer);
             btree.store(braf);
+
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -265,7 +273,6 @@ public class MenuActions {
 
         System.out.println("Carregando arvore...");
         btree.load(braf);
-        System.out.println("\n Arvore: \n");
         Node node = btree.search(seek);
         if (node != null) {
             for (int i = 0; i < node.keycount; i++) {
@@ -481,12 +488,15 @@ public class MenuActions {
         } catch (Exception e) {
             System.out.println("\nError: " + e.getMessage());
         }
+        
+        
         System.out.println("Carregando arvore...");
         btree.load(braf);
         System.out.println("Atualizando arvore...");
         btree.delete(seek);
-        System.out.println("Arvore deletada");
+        System.out.println("Registro deleteado na arvore");
         btree.insert(seek, pointer);
+        btree.store(braf);
 
     }
 
@@ -522,9 +532,13 @@ public class MenuActions {
             }
         }
 
+        System.out.println("Carregando arvore...");
         btree.load(braf);
+        System.out.println("\n Arvore: \n");
         btree.traverse();
+        System.out.println("Deletando registro da arvore...");
         btree.delete(seek);
+        btree.store(braf);
 
         try {
             raf.seek(0);

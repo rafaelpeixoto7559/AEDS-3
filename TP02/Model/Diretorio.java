@@ -26,6 +26,7 @@ public class Diretorio {
                 dir.seek(0);
                 dir.writeInt(1);
                 long pointer = writeBucket(new Bucket());
+                dir.seek(12);
                 dir.writeLong(pointer);
                 long pointer2 = writeBucket(new Bucket());
                 dir.writeLong(pointer2);
@@ -41,7 +42,6 @@ public class Diretorio {
     }
 
     public void add(int id) throws Exception {
-        System.out.println(pGlobal);
         int idIdx = 0;
         long posIdx = 0;
         try {
@@ -58,10 +58,8 @@ public class Diretorio {
             System.out.println("Index não encontrado");
         }
         int k = (int) getKey(id);
-        System.out.println(k);
         try {
             long address = readPointer(k);
-            System.out.println(address);
             Bucket bct = readBucket(address);
             if (bct == null) { // se o bucket estiver vazio
                 throw new Exception(" :( ");
@@ -92,8 +90,7 @@ public class Diretorio {
         reg[bct.maxsize - 1].pointer = posReg;
         resetBucket(bct);
         writeBucket(bct, address);
-
-        for (int i = 0; i < bct.maxsize - 1; i++) {
+        for (int i = 0; i < bct.currentsize - 1; i++) {
             int k = (int) getKey(reg[i].id);
             long bctPointer = readPointer(k);
             Bucket nBucket = readBucket(bctPointer);
@@ -119,7 +116,7 @@ public class Diretorio {
     }
 
     public static void writePointer(int k, long pointer) throws IOException {
-        dir.seek(4 + (k) * 8 * pGlobal);
+        dir.seek(4 + 8 * pGlobal + k * 8);
         dir.writeLong(pointer);
     }
 
@@ -177,7 +174,7 @@ public class Diretorio {
     }
 
     public static long readPointer(int k) throws IOException {
-        dir.seek(4 + k * (8));
+        dir.seek(4 + 8 * pGlobal + k * 8);
         return dir.readLong();
     }
 
@@ -202,6 +199,9 @@ public class Diretorio {
 
     public static double getKey(int k) {
         System.out.println(k);
+        if(k == -1){
+           k = 0;
+        }
         return k % Math.pow(2, pGlobal);
     }
 }
