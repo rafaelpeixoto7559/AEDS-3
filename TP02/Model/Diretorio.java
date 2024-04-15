@@ -177,7 +177,7 @@ public class Diretorio {
     }
 
     public static long readPointer(int k) throws IOException {
-        dir.seek(4 + k * (8) * pGlobal);
+        dir.seek(4 + k * (8));
         return dir.readLong();
     }
 
