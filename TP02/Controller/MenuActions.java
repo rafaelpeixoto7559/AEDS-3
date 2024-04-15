@@ -239,7 +239,7 @@ public class MenuActions {
 
     }
 
-    public void findOne() throws IOException {
+    public void findOne() throws Exception {
         System.out.println("\nLendo Registro...");
 
         int seek = 0;

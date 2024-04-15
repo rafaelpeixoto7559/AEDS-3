@@ -101,21 +101,25 @@ public class Node {
     }
 
     // Function to search for key in subtree rooted with this node
-    public Node search(int key) {
-        int i = 0;
-        while (i < this.keycount && key > this.keys[i]) {
-            i++;
-        }
+    public Node search(int key) throws Exception{
+        try{
+            int i = 0;
+            while (i < this.keycount && key > this.keys[i]) {
+                i++;
+            }
 
-        if (this.keys[i] == key && i < this.keycount) {
-            return this;
-        }
+            if (this.keys[i] == key && i < this.keycount) {
+                return this;
+            }
 
-        if (this.isLeaf) {
-            return null;
-        }
+            if (this.isLeaf) {
+                return null;
+            }
 
-        return this.child[i].search(key);
+            return this.child[i].search(key);
+        }catch(Exception e){
+            throw new Exception("Key not found");
+        }
     }
 
     public int find(int k) {

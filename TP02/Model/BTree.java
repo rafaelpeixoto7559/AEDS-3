@@ -24,7 +24,7 @@ public class BTree {
     }
 
     // Function to search given key in tree
-    public Node search(int key) {
+    public Node search(int key) throws Exception {
         if (this.root == null) {
             System.out.println("Arvore vazia!");
             return null;
