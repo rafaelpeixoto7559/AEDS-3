@@ -27,6 +27,9 @@ public class Diretorio {
                 dir.writeInt(1);
                 long pointer = writeBucket(new Bucket());
                 dir.writeLong(pointer);
+                long pointer2 = writeBucket(new Bucket());
+                dir.writeLong(pointer2);
+                pGlobal = 1;
             }
             aux.seek(0);
             for (int i = 0; i < 50; i++) {
@@ -38,6 +41,7 @@ public class Diretorio {
     }
 
     public void add(int id) throws Exception {
+        System.out.println(pGlobal);
         int idIdx = 0;
         long posIdx = 0;
         try {
@@ -45,54 +49,52 @@ public class Diretorio {
             while (aux.getFilePointer() < aux.length()) {
                 idIdx = aux.readInt();
                 posIdx = aux.readLong();
+                // System.out.println("Registro encontrado!");
                 if (idIdx == id) {
-                    // System.out.println("Registro encontrado!");
                     break;
                 }
             }
         } catch (Exception e) {
             System.out.println("Index não encontrado");
         }
-
         int k = (int) getKey(id);
-        long address = -1;
+        System.out.println(k);
         try {
-            address = readPointer(k);
+            long address = readPointer(k);
+            System.out.println(address);
+            Bucket bct = readBucket(address);
+            if (bct == null) { // se o bucket estiver vazio
+                throw new Exception(" :( ");
+            } else if (bct.currentsize < bct.maxsize) {
+                bct.id[bct.currentsize] = idIdx;
+                bct.pos[bct.currentsize] = posIdx;
+                writeBucket(bct, address);
+            } else {
+                Split(bct, address, idIdx, posIdx);
+            }
         } catch (Exception e) {
             System.out.println("ESPAÇO VAZIO!");
-        }
-        Bucket bct = readBucket(address);
-        if (bct == null) { // se o bucket estiver vazio
-            throw new Exception(" :( ");
-        } else if (bct.currentsize < bct.maxsize) {
-            bct.id[bct.currentsize] = idIdx;
-            bct.pos[bct.currentsize] = posIdx;
-            writeBucket(bct, address);
-        } else {
-            Split(bct, address, idIdx, posIdx);
         }
     }
 
     public static long Split(Bucket bct, long address, int idReg, long posReg) throws Exception {
+        RegistryHash reg[] = new RegistryHash[bct.maxsize + 1];
         buck.seek(address);
         int p = buck.readInt();
         if (pGlobal == p) {
             duplicate();
             updateP();
         }
-        RegistryHash reg[] = new RegistryHash[bct.maxsize + 1];
         for (int i = 0; i < bct.maxsize; i++) {
-            reg[i] = new RegistryHash();
-            reg[i].id = bct.id[i];
-            reg[i].pointer = bct.pos[i];
+            reg[i] = new RegistryHash(bct.id[i], bct.pos[i]);
         }
-        reg[bct.maxsize].id = idReg;
-        reg[bct.maxsize].pointer = posReg;
+        reg[bct.maxsize - 1].id = idReg;
+        reg[bct.maxsize - 1].pointer = posReg;
         resetBucket(bct);
         writeBucket(bct, address);
 
-        for (RegistryHash registryHash : reg) {
-            int k = (int) getKey(registryHash.id);
+        for (int i = 0; i < bct.maxsize - 1; i++) {
+            int k = (int) getKey(reg[i].id);
             long bctPointer = readPointer(k);
             Bucket nBucket = readBucket(bctPointer);
 
@@ -105,20 +107,19 @@ public class Diretorio {
                 writePointer(k, auxPos);
             }
             if (nBucket.currentsize < nBucket.maxsize) {
-                nBucket.id[nBucket.currentsize] = registryHash.id;
-                nBucket.pos[nBucket.currentsize] = registryHash.pointer;
+                nBucket.id[nBucket.currentsize] = reg[i].id;
+                nBucket.pos[nBucket.currentsize] = reg[i].pointer;
                 nBucket.currentsize++;
                 writeBucket(bct, bctPointer);
             } else {
-                Split(nBucket, bctPointer, registryHash.id, registryHash.pointer);
+                Split(nBucket, bctPointer, reg[i].id, reg[i].pointer);
             }
-
         }
         return 0;
     }
 
     public static void writePointer(int k, long pointer) throws IOException {
-        dir.seek(4 + k * (8));
+        dir.seek(4 + (k) * 8 * pGlobal);
         dir.writeLong(pointer);
     }
 
@@ -142,9 +143,9 @@ public class Diretorio {
         for (int i = 0; i < (int) Math.pow(2, pGlobal); i++) {
             long buckpointer = readPointer(i);
             newPointers[i] = buckpointer;
-            writeNewPointer(buckpointer);
+            int k = i + (int) Math.pow(2, pGlobal);
+            writePointer(k, buckpointer);
         }
-
     }
 
     public static long writeBucket(Bucket bkt) throws IOException {
@@ -160,6 +161,7 @@ public class Diretorio {
     }
 
     public static void writeBucket(Bucket bkt, long address) throws IOException {
+        bkt.currentsize++;
         buck.seek(address);
         buck.writeInt(bkt.pLocal);
         buck.writeInt(bkt.currentsize);
@@ -175,13 +177,8 @@ public class Diretorio {
     }
 
     public static long readPointer(int k) throws IOException {
-        dir.seek(4 + k * (8));
+        dir.seek(4 + k * (8) * pGlobal);
         return dir.readLong();
-    }
-
-    public static void writeNewPointer(long pointer) throws IOException {
-        dir.seek(getByteSize());
-        dir.writeLong(pointer);
     }
 
     public static Bucket readBucket(long pointer) throws IOException {
@@ -193,17 +190,18 @@ public class Diretorio {
             bucket.currentsize = buck.readInt();
 
             for (int i = 0; i < bucket.maxsize; i++) {
-                bucket.id[bucket.currentsize] = buck.readInt();
-                bucket.pos[bucket.currentsize] = buck.readLong();
+                bucket.id[i] = buck.readInt();
+                bucket.pos[i] = buck.readLong();
             }
-
             return bucket;
         } catch (Exception e) {
+            System.out.println(e);
             return null;
         }
     }
 
     public static double getKey(int k) {
+        System.out.println(k);
         return k % Math.pow(2, pGlobal);
     }
 }

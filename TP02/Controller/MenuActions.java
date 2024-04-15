@@ -1,6 +1,5 @@
 package Controller;
 
-
 import Model.Diretorio;
 import Model.Indexes;
 import Model.BTree;
@@ -27,7 +26,6 @@ public class MenuActions {
 
     BTree btree;
 
-
     public void startApp() throws Exception {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
         braf = new RandomAccessFile("./Database/BTree.db", "rw");
@@ -44,7 +42,7 @@ public class MenuActions {
             System.out.println(e.getMessage());
         }
     }
-  
+
     public void loadData() throws Exception {
         System.out.println("\nCarregando Dados...");
         try {
@@ -101,14 +99,13 @@ public class MenuActions {
                         raf.seek(raf.getFilePointer() - 1);
                         btree.insert(screenplay.getId(), pointer); // adds record to btree
                     } else {
-                        raf.seek(raf.getFilePointer() + size-1); // if the record is removed, skip it
+                        raf.seek(raf.getFilePointer() + size - 1); // if the record is removed, skip it
                     }
                 }
-                
-            }catch (EOFException e) {
+
+            } catch (EOFException e) {
                 System.out.println("\nFim dos Registros...");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
 
@@ -563,7 +560,7 @@ public class MenuActions {
             }
             // System.out.println("Digite um id:");
             // int id = scanner.nextInt();
-            // dir.add(id);
+            // dir.add(id)
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
