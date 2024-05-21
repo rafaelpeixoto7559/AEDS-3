@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.LZW;
 import Model.Diretorio;
 import Model.Indexes;
 import Model.BTree;
@@ -20,6 +21,8 @@ import java.io.IOException;
 public class MenuActions {
     RandomAccessFile raf;
     RandomAccessFile braf;
+    RandomAccessFile lzwraf;
+    RandomAccessFile lzwraf2;
     Scanner scanner;
 
     Indexes indexes;
@@ -29,6 +32,8 @@ public class MenuActions {
     public void startApp() throws Exception {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
         braf = new RandomAccessFile("./Database/BTree.db", "rw");
+        lzwraf = new RandomAccessFile("./Database/LZW/NetFlixLzwCompressao1.db", "rw");
+        lzwraf2 = new RandomAccessFile("./Database/LZW/Descomprimido.db", "rw");
         scanner = new Scanner(System.in);
 
         indexes = new Indexes();
@@ -126,8 +131,8 @@ public class MenuActions {
                 if (rip == false) {
                     byte[] ba = new byte[size]; // create a byte array with the size of the record
                     raf.read(ba);
+                    System.out.println(ba.toString());
                     Screenplay screenplay = new Screenplay();
-                    screenplay.fromByteArray(ba); // convert byte array to Screenplay object
                     raf.seek(raf.getFilePointer() - 1);
                     System.out.println(screenplay);
                 } else {
@@ -601,6 +606,7 @@ public class MenuActions {
     }
 
     public void Hash() {
+
         Diretorio dir = new Diretorio();
 
         try {
@@ -616,4 +622,21 @@ public class MenuActions {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
+    public void Compress(){
+        try {
+            LZW lzw = new LZW();
+            byte[] data = new byte[7700];
+            raf.seek(0);
+            raf.read(data);
+            String compressed = lzw.compress(data);
+            lzw.Write(compressed, lzwraf);
+            lzwraf.seek(0);
+            lzwraf2.setLength(0);
+            lzwraf2.write(lzw.decompress(compressed));
+        }catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
 }
