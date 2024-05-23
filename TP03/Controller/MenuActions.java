@@ -626,17 +626,36 @@ public class MenuActions {
     public void Compress(){
         try {
             LZW lzw = new LZW();
-            byte[] data = new byte[7700];
+            int size = (int) raf.length();
+            byte[] data = new byte[size];
             raf.seek(0);
             raf.read(data);
+            long startTime = System.nanoTime(); // start counting execution time
             String compressed = lzw.compress(data);
+            long endTime = System.nanoTime(); // end counting execution time
+            double executionTime = (endTime - startTime) / 1_000_000_000.0; // calculate execution time in seconds
+            System.out.println("Execution time compression: " + executionTime + " seconds");
             lzw.Write(compressed, lzwraf);
             lzwraf.seek(0);
-            lzwraf2.setLength(0);
-            lzwraf2.write(lzw.decompress(compressed));
-        }catch (Exception e) {
+            
+        } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
+    public void decompress() throws Exception{
+        LZW lzw = new LZW();
+        lzwraf2.setLength(0);
+        lzwraf.seek(0);
+        int size = (int) lzwraf.length();
+        byte[] compressed = new byte[size];
+        lzwraf.read(compressed);
+        String compressedString = new String(compressed);
+        long startTime2 = System.nanoTime(); // start counting execution time
+        lzwraf2.write(lzw.decompress(compressedString));
+        long endTime2 = System.nanoTime(); // end counting execution time
+        double executionTime2 = (endTime2 - startTime2) / 1_000_000_000.0; // calculate execution time in seconds
+        System.out.println("Execution time decompression: " + executionTime2 + " seconds");
+    }
 }
+ 
