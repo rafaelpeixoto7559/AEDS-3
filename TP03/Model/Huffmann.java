@@ -4,17 +4,43 @@ import java.util.ArrayList;
 
 public class Huffmann {
 
-    public static void printTree(HuffmannNode node) {
-        printTree(node, "");
+    public static ArrayList<finalNode> printTree(HuffmannNode node) {
+        ArrayList<finalNode> freq = new ArrayList<>();
+        printTree(node, "", freq);
+        return freq;
     }
 
-    private static void printTree(HuffmannNode node, String path) {
+    public static HuffmannNode buildTreeFromPath(ArrayList<finalNode> nodes) {
+        HuffmannNode root = new HuffmannNode();
+        for (finalNode node : nodes) {
+            HuffmannNode current = root;
+            for (int i = 0; i < node.path.length(); i++) {
+                if (node.path.charAt(i) == '0') {
+                    if (current.left == null) {
+                        current.left = new HuffmannNode();
+                    }
+                    current = current.left;
+                } else {
+                    if (current.right == null) {
+                        current.right = new HuffmannNode();
+                    }
+                    current = current.right;
+                }
+            }
+            current.symbol = node.symbol;
+        }
+        return root;
+    }
+
+    private static ArrayList<finalNode> printTree(HuffmannNode node, String path, ArrayList<finalNode> freq) {
         if (node.left == null && node.right == null) {
+            freq.add(new finalNode(node.symbol, path));
             System.out.println(node.symbol + " " + path);
         } else {
-            printTree(node.left, path + "0");
-            printTree(node.right, path + "1");
+            printTree(node.left, path + "0", freq);
+            printTree(node.right, path + "1", freq);
         }
+        return freq;
     }
 
     public static ArrayList<HuffmannNode> TreatString(String word) {
@@ -72,7 +98,10 @@ public class Huffmann {
     public static void main(String[] args) {
         ArrayList<HuffmannNode> nodeArr = TreatString("abcdefgh");
         HuffmannNode node = buildTree(nodeArr);
-        printTree(node);
+        ArrayList<finalNode> nodes = printTree(node);
+        for (finalNode f : nodes) {
+            System.out.println(f.symbol + " " + f.path);
+        }
     }
 
 }
