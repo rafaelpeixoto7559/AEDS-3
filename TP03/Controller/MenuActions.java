@@ -6,7 +6,10 @@ import Model.Indexes;
 import Model.BTree;
 import Model.Node;
 import Model.Screenplay;
+import Model.finalNode;
+
 import java.io.RandomAccessFile;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -17,12 +20,16 @@ import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import Model.Huffmann;
+import Model.HuffmannNode;
 
 public class MenuActions {
     RandomAccessFile raf;
     RandomAccessFile braf;
     RandomAccessFile lzwraf;
     RandomAccessFile lzwraf2;
+    RandomAccessFile huffraf;
     Scanner scanner;
 
     Indexes indexes;
@@ -34,6 +41,7 @@ public class MenuActions {
         braf = new RandomAccessFile("./Database/BTree.db", "rw");
         lzwraf = new RandomAccessFile("./Database/LZW/NetFlixLzwCompressao1.db", "rw");
         lzwraf2 = new RandomAccessFile("./Database/LZW/Descomprimido.db", "rw");
+        huffraf = new RandomAccessFile("./Database/Huffman.db", "rw");
         scanner = new Scanner(System.in);
 
         indexes = new Indexes();
@@ -147,11 +155,9 @@ public class MenuActions {
         }
         System.out.println("Carregando arvore...");
 
-
         btree.load(braf);
         System.out.println("\n Arvore: ");
         btree.traverse();
-
 
     }
 
@@ -232,11 +238,9 @@ public class MenuActions {
             System.out.println("\nRegistro criado. ID: " + screenplay.getId());
             System.out.println("Adicionando ao arquivo de indices...");
 
-
             btree.load(braf);
             btree.insert(screenplay.getId(), pointer);
             btree.store(braf);
-
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -493,8 +497,7 @@ public class MenuActions {
         } catch (Exception e) {
             System.out.println("\nError: " + e.getMessage());
         }
-        
-        
+
         System.out.println("Carregando arvore...");
         btree.load(braf);
         System.out.println("Atualizando arvore...");
@@ -605,25 +608,61 @@ public class MenuActions {
         return arrData;
     }
 
-    public void Hash() {
-
-        Diretorio dir = new Diretorio();
-
+    public void putHuffmann() {
         try {
-
-            for (int i = 0; i < 7700; i++) {
-                // System.out.println("Inserindo registro de ID:" + i);
-                dir.add(i);
+            raf.seek(0);
+            huffraf.seek(0);
+        } catch (IOException e) {
+            // TODO: handle exception
+        }
+        try {
+            String ALLOFIT = "";
+            int size = (int) raf.length();
+            byte[] data = new byte[size];
+            raf.readFully(data);
+            ALLOFIT = new String(data);
+            ArrayList<HuffmannNode> nodeArr = Huffmann.TreatString(ALLOFIT);
+            ArrayList<finalNode> finalArr = Huffmann.printTree(Huffmann.buildTree(nodeArr));
+            for (finalNode fn : finalArr) {
+                huffraf.writeInt(fn.symbol.length());
+                huffraf.write(fn.symbol.getBytes());
+                huffraf.writeInt(fn.path.length());
+                huffraf.write(fn.path.getBytes());
             }
-            // System.out.println("Digite um id:");
-            // int id = scanner.nextInt();
-            // dir.add(id)
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+
     }
 
-    public void Compress(){
+    public void getHuffmann() {
+        ArrayList<finalNode> finalArr = new ArrayList<>();
+        try {
+            huffraf.seek(0);
+            int size = (int) huffraf.length();
+            for (int i = 0; i < size; i++) {
+                // TODO: PQ Q TA DANDO ERRO NO ULTIMO???
+                System.out.println("i: " + i);
+                int symbolSize = huffraf.readInt();
+                byte[] symbol = new byte[symbolSize];
+                huffraf.read(symbol);
+                int pathSize = huffraf.readInt();
+                byte[] path = new byte[pathSize];
+                huffraf.read(path);
+                finalArr.add(new finalNode(new String(symbol), new String(path)));
+                System.out.println(new String(symbol) + " " + new String(path));
+            }
+            HuffmannNode root = Huffmann.buildTreeFromPath(finalArr);
+            Huffmann.printTree(root);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    public void Compress() {
         try {
             LZW lzw = new LZW();
             int size = (int) raf.length();
@@ -637,13 +676,13 @@ public class MenuActions {
             System.out.println("Execution time compression: " + executionTime + " seconds");
             lzw.Write(compressed, lzwraf);
             lzwraf.seek(0);
-            
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    public void decompress() throws Exception{
+    public void decompress() throws Exception {
         LZW lzw = new LZW();
         lzwraf2.setLength(0);
         lzwraf.seek(0);
@@ -658,4 +697,3 @@ public class MenuActions {
         System.out.println("Execution time decompression: " + executionTime2 + " seconds");
     }
 }
- 
