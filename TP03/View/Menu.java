@@ -29,9 +29,11 @@ public class Menu extends MenuActions {
     System.out.println("5: Atualizar Registro");
     System.out.println("6: Deletar Registro");
     System.out.println("7: Hashing Extensível");
-    System.out.println("8: Sair");
+    System.out.println("8: Comprimir");
+    System.out.println("9: Descomprimir");
+    System.out.println("0: Sair");
     int userEntry = Integer.parseInt(scanner.nextLine());
-    while (userEntry < 1 || userEntry > 7) {
+    while (userEntry < 0 || userEntry > 9) {
       System.out.println("Opção Inválida, tente novamente");
       userEntry = Integer.parseInt(scanner.nextLine());
     }
@@ -79,6 +81,16 @@ public class Menu extends MenuActions {
       case 7:
 
         this.Hash();
+        this.execute();
+        break;
+      case 8:
+
+        this.Compress();
+        this.execute();
+        break;
+      case 9:
+
+        this.decompress();
         this.execute();
         break;
       default:
