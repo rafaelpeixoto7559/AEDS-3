@@ -29,11 +29,9 @@ public class MenuActions {
     RandomAccessFile braf;
     RandomAccessFile lzwraf;
     RandomAccessFile huffraf;
-    huffman-archive
     RandomAccessFile CMPhuffraf;
     RandomAccessFile DCMPHuffraf;
     RandomAccessFile Version;
- main
     Scanner scanner;
 
     Indexes indexes;
@@ -45,7 +43,6 @@ public class MenuActions {
         braf = new RandomAccessFile("./Database/BTree.db", "rw");
         lzwraf = new RandomAccessFile("./Database/LZW/NetFlixLzwCompressao1.db", "rw");
 
-        lzwraf2 = new RandomAccessFile("./Database/LZW/Descomprimido.db", "rw");
         huffraf = new RandomAccessFile("./Database/Huffman.db", "rw");
         CMPhuffraf = new RandomAccessFile("./Database/CMPhuffman.db", "rw");
         DCMPHuffraf = new RandomAccessFile("./Database/DCMPHuffman.db", "rw");
