@@ -28,10 +28,12 @@ public class MenuActions {
     RandomAccessFile raf;
     RandomAccessFile braf;
     RandomAccessFile lzwraf;
-    RandomAccessFile lzwraf2;
     RandomAccessFile huffraf;
+    huffman-archive
     RandomAccessFile CMPhuffraf;
     RandomAccessFile DCMPHuffraf;
+    RandomAccessFile Version;
+ main
     Scanner scanner;
 
     Indexes indexes;
@@ -42,10 +44,15 @@ public class MenuActions {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
         braf = new RandomAccessFile("./Database/BTree.db", "rw");
         lzwraf = new RandomAccessFile("./Database/LZW/NetFlixLzwCompressao1.db", "rw");
+
         lzwraf2 = new RandomAccessFile("./Database/LZW/Descomprimido.db", "rw");
         huffraf = new RandomAccessFile("./Database/Huffman.db", "rw");
         CMPhuffraf = new RandomAccessFile("./Database/CMPhuffman.db", "rw");
         DCMPHuffraf = new RandomAccessFile("./Database/DCMPHuffman.db", "rw");
+
+        huffraf = new RandomAccessFile("./Database/NetFlixHuffmanCompressao1.db", "rw");
+        Version = new RandomAccessFile("./Database/Versions.db", "rw");
+
         scanner = new Scanner(System.in);
 
         indexes = new Indexes();
@@ -687,20 +694,70 @@ public class MenuActions {
 
     }
 
+    public int getVersion(){
+        int version = 0;
+        try {
+            raf.seek(0);
+            version = raf.readInt();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        return version;
+    }
+
+    public int addVersion(){
+        int version = 0;
+        try {
+            raf.seek(0);
+            version = raf.readInt();
+            version++;
+            raf.seek(0);
+            raf.writeInt(version);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        return version;
+    }
+    
     public void Compress() {
         try {
+            
+            int version = getVersion();
+            version++;
+            String filepathLZW = "./Database/LZW/NetFlixLzwCompressao" + version + ".db";
+            String filepathhuffman = "./Database/LZW/NetFlixHuffmanCompressao" + version + ".db";
+
+
+            lzwraf = new RandomAccessFile(filepathLZW, "rw");
+            huffraf = new RandomAccessFile(filepathhuffman, "rw");
+            // LZW compression
+
+            System.out.println("LZW Compressing...");
+            
             LZW lzw = new LZW();
             int size = (int) raf.length();
             byte[] data = new byte[size];
             raf.seek(0);
             raf.read(data);
+
             long startTime = System.nanoTime(); // start counting execution time
             String compressed = lzw.compress(data);
             long endTime = System.nanoTime(); // end counting execution time
             double executionTime = (endTime - startTime) / 1_000_000_000.0; // calculate execution time in seconds
             System.out.println("Execution time compression: " + executionTime + " seconds");
+
             lzw.Write(compressed, lzwraf);
+
             lzwraf.seek(0);
+            // huffman compression
+
+            System.out.println("Huffman Compressing...");
+
+            startTime = System.nanoTime(); // start counting execution time
+            putHuffmann();
+            endTime = System.nanoTime(); // end counting execution time
+            executionTime = (endTime - startTime) / 1_000_000_000.0; // calculate execution time in seconds
+            System.out.println("Execution time compression: " + executionTime + " seconds");
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -708,17 +765,46 @@ public class MenuActions {
     }
 
     public void decompress() throws Exception {
+
+        scanner = new Scanner(System.in);
+        System.out.println("Select Version to Decompress: ");
+        int version = scanner.nextInt();
+        
+        String filepathLZW = "./Database/LZW/NetFlixLzwCompressao" + version + ".db";
+        String filepathhuffman = "./Database/LZW/NetFlixHuffmanCompressao" + version + ".db";
+
+        lzwraf = new RandomAccessFile(filepathLZW, "rw");
+        huffraf = new RandomAccessFile(filepathhuffman, "rw");
+
+        // LZW decompression
+
         LZW lzw = new LZW();
-        lzwraf2.setLength(0);
+        raf.setLength(0);
         lzwraf.seek(0);
         int size = (int) lzwraf.length();
         byte[] compressed = new byte[size];
         lzwraf.read(compressed);
         String compressedString = new String(compressed);
+        
+        System.out.println("LZW Decompressing...");
+
         long startTime2 = System.nanoTime(); // start counting execution time
-        lzwraf2.write(lzw.decompress(compressedString));
+        raf.write(lzw.decompress(compressedString));
+        
         long endTime2 = System.nanoTime(); // end counting execution time
         double executionTime2 = (endTime2 - startTime2) / 1_000_000_000.0; // calculate execution time in seconds
         System.out.println("Execution time decompression: " + executionTime2 + " seconds");
+
+        // huffman decompression
+
+        System.out.println("Huffman Decompressing...");
+
+        long startTime = System.nanoTime(); // start counting execution time
+        getHuffmann();
+        long endTime = System.nanoTime(); // end counting execution time
+        double executionTime = (endTime - startTime) / 1_000_000_000.0; // calculate execution time in seconds
+        System.out.println("Execution time decompression: " + executionTime + " seconds");
+
+
     }
 }
