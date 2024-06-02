@@ -29,7 +29,11 @@ public class MenuActions {
     RandomAccessFile braf;
     RandomAccessFile lzwraf;
     RandomAccessFile huffraf;
+    huffman-archive
+    RandomAccessFile CMPhuffraf;
+    RandomAccessFile DCMPHuffraf;
     RandomAccessFile Version;
+ main
     Scanner scanner;
 
     Indexes indexes;
@@ -40,8 +44,15 @@ public class MenuActions {
         raf = new RandomAccessFile("./Database/Screenplay.db", "rw");
         braf = new RandomAccessFile("./Database/BTree.db", "rw");
         lzwraf = new RandomAccessFile("./Database/LZW/NetFlixLzwCompressao1.db", "rw");
+
+        lzwraf2 = new RandomAccessFile("./Database/LZW/Descomprimido.db", "rw");
+        huffraf = new RandomAccessFile("./Database/Huffman.db", "rw");
+        CMPhuffraf = new RandomAccessFile("./Database/CMPhuffman.db", "rw");
+        DCMPHuffraf = new RandomAccessFile("./Database/DCMPHuffman.db", "rw");
+
         huffraf = new RandomAccessFile("./Database/NetFlixHuffmanCompressao1.db", "rw");
         Version = new RandomAccessFile("./Database/Versions.db", "rw");
+
         scanner = new Scanner(System.in);
 
         indexes = new Indexes();
@@ -627,6 +638,15 @@ public class MenuActions {
                 huffraf.writeUTF(fn.symbol);
                 huffraf.writeUTF(fn.path);
             }
+            CMPhuffraf.seek(0);
+            for (int index = 0; index < ALLOFIT.length(); index++) {
+                String symbol = ALLOFIT.substring(index, index + 1);
+                for (finalNode fn : finalArr) {
+                    if (fn.symbol.equals(symbol)) {
+                        CMPhuffraf.writeUTF(fn.path);
+                    }
+                }
+            }
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -649,6 +669,27 @@ public class MenuActions {
             // ALERTA DE BAIANAGEM
             HuffmannNode root = Huffmann.buildTreeFromPath(finalArr);
             Huffmann.printTree(root);
+            String symbolSearch = "";
+            try {
+                DCMPHuffraf.seek(0);
+                while (CMPhuffraf.getFilePointer() < CMPhuffraf.length()) {
+                    symbolSearch = CMPhuffraf.readUTF();
+                    for (finalNode fn : finalArr) {
+                        if (fn.path.equals(symbolSearch)) {
+                            DCMPHuffraf.write(fn.symbol.getBytes());
+                        }
+                    }
+                }
+                String ALLOFIT = "";
+                DCMPHuffraf.seek(0);
+                while (DCMPHuffraf.getFilePointer() < DCMPHuffraf.length()) {
+                    ALLOFIT += DCMPHuffraf.readUTF();
+                    System.out.println(ALLOFIT);
+                }
+            } catch (Exception j) {
+                // TODO: handle exception
+            }
+
         }
 
     }
