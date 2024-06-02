@@ -28,13 +28,11 @@ public class Menu extends MenuActions {
     System.out.println("4: Procurar Registro");
     System.out.println("5: Atualizar Registro");
     System.out.println("6: Deletar Registro");
-    System.out.println("7: Arquivar Huffman");
-    System.out.println("8: Comprimir");
-    System.out.println("9: Descomprimir");
-    System.out.println("10: Desarquivar Huffman");
+    System.out.println("7: Comprimir");
+    System.out.println("8: Descomprimir");
     System.out.println("0: Sair");
     int userEntry = Integer.parseInt(scanner.nextLine());
-    while (userEntry < 0 || userEntry > 10) {
+    while (userEntry < 0 || userEntry > 8) {
       System.out.println("Opção Inválida, tente novamente");
       userEntry = Integer.parseInt(scanner.nextLine());
     }
@@ -79,22 +77,13 @@ public class Menu extends MenuActions {
         this.execute();
         break;
       case 7:
-        this.putHuffmann();
-        this.execute();
-        break;
-      case 8:
 
         this.Compress();
         this.execute();
         break;
-      case 9:
+      case 8:
 
         this.decompress();
-        this.execute();
-        break;
-      case 10:
-
-        this.getHuffmann();
         this.execute();
         break;
       default:
