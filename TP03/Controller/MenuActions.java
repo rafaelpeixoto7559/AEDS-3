@@ -624,10 +624,8 @@ public class MenuActions {
             ArrayList<HuffmannNode> nodeArr = Huffmann.TreatString(ALLOFIT);
             ArrayList<finalNode> finalArr = Huffmann.printTree(Huffmann.buildTree(nodeArr));
             for (finalNode fn : finalArr) {
-                huffraf.writeInt(fn.symbol.length());
-                huffraf.write(fn.symbol.getBytes());
-                huffraf.writeInt(fn.path.length());
-                huffraf.write(fn.path.getBytes());
+                huffraf.writeUTF(fn.symbol);
+                huffraf.writeUTF(fn.path);
             }
 
         } catch (Exception e) {
@@ -640,24 +638,17 @@ public class MenuActions {
         ArrayList<finalNode> finalArr = new ArrayList<>();
         try {
             huffraf.seek(0);
-            int size = (int) huffraf.length();
-            for (int i = 0; i < size; i++) {
-                // TODO: PQ Q TA DANDO ERRO NO ULTIMO???
-                System.out.println("i: " + i);
-                int symbolSize = huffraf.readInt();
-                byte[] symbol = new byte[symbolSize];
-                huffraf.read(symbol);
-                int pathSize = huffraf.readInt();
-                byte[] path = new byte[pathSize];
-                huffraf.read(path);
+            while (huffraf.getFilePointer() < huffraf.length()) {
+                // System.out.println("i: " + i);
+                String symbol = huffraf.readUTF();
+                String path = huffraf.readUTF();
                 finalArr.add(new finalNode(new String(symbol), new String(path)));
-                System.out.println(new String(symbol) + " " + new String(path));
+                // System.out.println(new String(symbol) + " " + new String(path));
             }
+        } catch (IOException e) {
+            // ALERTA DE BAIANAGEM
             HuffmannNode root = Huffmann.buildTreeFromPath(finalArr);
             Huffmann.printTree(root);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
     }
