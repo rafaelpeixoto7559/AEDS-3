@@ -54,6 +54,9 @@ public class MenuActions {
 
         indexes = new Indexes();
         btree = new BTree(4);
+
+        Version.seek(0);
+        Version.writeInt(0);
     }
 
     public void finishApp() {
@@ -694,8 +697,8 @@ public class MenuActions {
     public int getVersion(){
         int version = 0;
         try {
-            raf.seek(0);
-            version = raf.readInt();
+            Version.seek(0);
+            version = Version.readInt();
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -705,11 +708,11 @@ public class MenuActions {
     public int addVersion(){
         int version = 0;
         try {
-            raf.seek(0);
-            version = raf.readInt();
+            Version.seek(0);
+            version = Version.readInt();
             version++;
-            raf.seek(0);
-            raf.writeInt(version);
+            Version.seek(0);
+            Version.writeInt(version);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -721,6 +724,7 @@ public class MenuActions {
             
             int version = getVersion();
             version++;
+            addVersion();
             String filepathLZW = "./Database/LZW/NetFlixLzwCompressao" + version + ".db";
             String filepathhuffman = "./Database/LZW/NetFlixHuffmanCompressao" + version + ".db";
 
