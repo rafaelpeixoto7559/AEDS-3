@@ -31,9 +31,10 @@ public class Menu extends MenuActions {
     System.out.println("7: Comprimir");
     System.out.println("8: Descomprimir");
     System.out.println("9: KMP");
+    System.out.println("10: RSA");
     System.out.println("0: Sair");
     int userEntry = Integer.parseInt(scanner.nextLine());
-    while (userEntry < 0 || userEntry > 9) {
+    while (userEntry < 0 || userEntry > 10) {
       System.out.println("Opção Inválida, tente novamente");
       userEntry = Integer.parseInt(scanner.nextLine());
     }
@@ -91,6 +92,11 @@ public class Menu extends MenuActions {
       case 9:
         this.KMP_Starter();
         this.execute();
+
+      case 10:
+        this.RSA_Starter();
+        this.execute();
+        break;
       default:
         this.finishApp();
         scanner.close();

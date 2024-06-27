@@ -4,6 +4,7 @@ import Model.LZW;
 import Model.Indexes;
 import Model.BTree;
 import Model.Node;
+import Model.RSA;
 import Model.Screenplay;
 import Model.finalNode;
 import Model.KMP;
@@ -833,6 +834,35 @@ public class MenuActions {
         String pattern = scanner.nextLine();
         for (Screenplay film : AllFilms) {
             kmp.KMPSearch(pattern.toLowerCase(),film.toString().toLowerCase());
+        }
+    }
+
+    public void RSA_Starter(){
+        RSA rsa = new RSA();
+        ArrayList<Screenplay> AllFilms = new ArrayList<>();
+        try {
+            raf.seek(4); // sets pointer to the first record
+            while (true) {
+                int size = raf.readInt(); // read the size of the record
+                boolean rip = raf.readBoolean(); // read if the record is removed
+                if (rip == false) {
+                    byte[] ba = new byte[size]; // create a byte array with the size of the record
+                    raf.read(ba);
+                    Screenplay screenplay = new Screenplay();
+                    screenplay.fromByteArray(ba);
+                    raf.seek(raf.getFilePointer() - 1);
+                    AllFilms.add(screenplay);
+                } else {
+                    raf.seek(raf.getFilePointer() + size - 1); // if the record is removed, skip it
+                }
+            }
+        } catch (EOFException e) {
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        for (Screenplay film : AllFilms) {
+            double [] encrypted = rsa.encode(film.toString());
+            rsa.decode(encrypted);
         }
     }
 }
