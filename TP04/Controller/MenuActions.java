@@ -826,15 +826,13 @@ public class MenuActions {
                 }
             }
         } catch (EOFException e) {
-            System.out.println("\nFim dos Registros...");
         } catch (Exception e) {
-            //System.out.println("Error: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
         System.out.println("Por favor, insira um padrão: ");
         String pattern = scanner.nextLine();
         for (Screenplay film : AllFilms) {
-            //kmp.KMPSearch(film.toString(), pattern);
-            kmp.KMPSearch(pattern,film.toString());
+            kmp.KMPSearch(pattern.toLowerCase(),film.toString().toLowerCase());
         }
     }
 }
